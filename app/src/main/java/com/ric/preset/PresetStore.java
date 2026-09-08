@@ -48,14 +48,18 @@ public final class PresetStore {
         if (!name.toLowerCase().endsWith(".xmp")) return 0;
         File dir = new File(c.getFilesDir(), "imported_presets/Imported"); dir.mkdirs();
         File dst = unique(dir, safe(name));
-        try(InputStream in=c.getContentResolver().openInputStream(uri); OutputStream os=new FileOutputStream(dst)) { copy(in,os); }
+        InputStream in=c.getContentResolver().openInputStream(uri);
+        if(in==null) throw new IOException("Tidak bisa membuka file");
+        try(InputStream src=in; OutputStream os=new FileOutputStream(dst)) { copy(src,os); }
         return 1;
     }
 
     private static int importZip(Context c, Uri uri, String zipName) throws Exception {
         File base = new File(c.getFilesDir(), "imported_presets/"+safe(zipName.replaceAll("(?i)\\.zip$", ""))); base.mkdirs();
         int count=0;
-        try(ZipInputStream zis=new ZipInputStream(c.getContentResolver().openInputStream(uri))) {
+        InputStream raw=c.getContentResolver().openInputStream(uri);
+        if(raw==null) throw new IOException("Tidak bisa membuka ZIP");
+        try(ZipInputStream zis=new ZipInputStream(raw)) {
             ZipEntry e;
             while((e=zis.getNextEntry())!=null) {
                 if (e.isDirectory() || !e.getName().toLowerCase().endsWith(".xmp")) continue;
@@ -78,5 +82,5 @@ public final class PresetStore {
     private static String parent(String p) { int i=p.lastIndexOf('/'); return i>0?p.substring(0,i).replace('/',' · '):"Built-in"; }
     private static String safe(String n) { return n.replaceAll("[^a-zA-Z0-9._ -]","_"); }
     private static File unique(File d,String n) { File f=new File(d,n); int i=2; while(f.exists()){ int dot=n.lastIndexOf('.'); String a=dot>0?n.substring(0,dot):n,b=dot>0?n.substring(dot):""; f=new File(d,a+" ("+(i++)+")"+b);} return f; }
-    private static void copy(InputStream in, OutputStream out) throws IOException { if(in==null) throw new IOException("Tidak bisa membuka file"); try(in;out){ byte[] b=new byte[8192]; int n; while((n=in.read(b))>0)out.write(b,0,n);} }
+    private static void copy(InputStream in, OutputStream out) throws IOException { byte[] b=new byte[8192]; int n; while((n=in.read(b))>0)out.write(b,0,n); }
 }
