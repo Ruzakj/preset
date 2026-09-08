@@ -79,7 +79,7 @@ public final class PresetStore {
         } catch(Exception ignored) {}
         String p=u.getLastPathSegment(); return p==null?"preset.xmp":p;
     }
-    private static String parent(String p) { int i=p.lastIndexOf('/'); return i>0?p.substring(0,i).replace('/',' · '):"Built-in"; }
+    private static String parent(String p) { int i=p.lastIndexOf('/'); return i>0?p.substring(0,i).replace("/", " · "):"Built-in"; }
     private static String safe(String n) { return n.replaceAll("[^a-zA-Z0-9._ -]","_"); }
     private static File unique(File d,String n) { File f=new File(d,n); int i=2; while(f.exists()){ int dot=n.lastIndexOf('.'); String a=dot>0?n.substring(0,dot):n,b=dot>0?n.substring(dot):""; f=new File(d,a+" ("+(i++)+")"+b);} return f; }
     private static void copy(InputStream in, OutputStream out) throws IOException { byte[] b=new byte[8192]; int n; while((n=in.read(b))>0)out.write(b,0,n); }
